@@ -2,13 +2,18 @@ import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import axios from "axios";
 export const fetchPhotos = createAsyncThunk(
     'photos/fetchPhotos',
-   async (userId, thunkAPI) => {
-       const response=  await axios.get(`https://jsonplaceholder.typicode.com/photos`,{
-           params: {
-               _limit: 10
-           }
-       })
-        return response
+
+    async (data,{rejectWithValue}) => {
+        try {
+            const response = await axios.get('https://jsonplaceholder.typicode.com/photos', {
+                params: {
+                                _limit: 5
+                            }
+            })
+            return response;
+        } catch (err) {
+            return rejectWithValue(err.response.data)
+        }
     }
 )
 const initialState = {
@@ -18,9 +23,7 @@ const initialState = {
 export const photosSlice = createSlice({
     name: 'photos',
     initialState,
-    reducers: {
-
-    },
+    reducers: {},
     extraReducers: (builder) => {
         builder.addCase(fetchPhotos.fulfilled, (state, action) => {
             state.photosList=action.payload;
@@ -28,6 +31,10 @@ export const photosSlice = createSlice({
         });
         builder.addCase(fetchPhotos.pending, (state, action) => {
          state.status='loading'
+        })
+        builder.addCase(fetchPhotos.rejected, (state, action) => {
+         state.status='failed'
+            console.log("error", action.payload)
         })
     },
 })
